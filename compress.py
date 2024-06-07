@@ -15,20 +15,45 @@ def pixel_count(BGR_image: list)-> int:
     width = len(BGR_image[0])
     return height*width
 
-def histogram_BGR(BGR_image:list)->list:
+def histogram_BGR(BGR_image):
     blue_list = []
     green_list = []
     red_list = []
-    for i in range(0,256):
+    gray_list = []
+
+    for i in range(256):
         blue_list.append(0)
         green_list.append(0)
         red_list.append(0)
+        gray_list.append(0)
+
     for row in BGR_image:
         for pixel in row:
-            blue_list[pixel[0]] += 1
-            green_list[pixel[1]] += 1
-            red_list[pixel[2]] += 1
-    return blue_list, green_list, red_list            
+            
+            blue_list[int(pixel[0])] += 1
+            green_list[int(pixel[1])] += 1
+            red_list[int(pixel[2])] += 1
+            gray_list[int((int(pixel[0]) + int(pixel[1]) + int(pixel[2]))/3)] += 1
+
+    return blue_list, green_list, red_list, gray_list   
+
+def unique_values(BGR_image):
+    blue = []
+    green = []
+    red = []
+    gray = []
+
+    for row in BGR_image:
+        for pixel in row:
+            if pixel[0] not in blue:
+                blue.append(pixel[0])
+            if pixel[1] not in green:
+                green.append(pixel[1])
+            if pixel[2] not in red:
+                red.append(pixel[2])
+            if int( (int(pixel[0]) + int(pixel[1]) + int(pixel[2])) / 3) not in gray:
+                gray.append(int( (int(pixel[0]) + int(pixel[1]) + int(pixel[2])) / 3))
+    return blue, green, red, gray
 
 if __name__ == '__main__':
     image_location='cat.png' 
@@ -39,30 +64,60 @@ if __name__ == '__main__':
     img = cv2.imread(image_location, cv2.IMREAD_COLOR) #Blue, Green, Red
     cv2.imshow(f'{image_location} - original', img) 
 
-    img = cv2.imread(image1, cv2.IMREAD_COLOR) #Blue, Green, Red
+    img1 = cv2.imread(image1, cv2.IMREAD_COLOR) #Blue, Green, Red
     cv2.imshow(f'{image1} - original', img) 
-    img = cv2.imread(image2, cv2.IMREAD_COLOR) #Blue, Green, Red
+
+    img2 = cv2.imread(image2, cv2.IMREAD_COLOR) #Blue, Green, Red
     cv2.imshow(f'{image2} - original', img) 
-    img = cv2.imread(image3, cv2.IMREAD_COLOR) #Blue, Green, Red
+
+    img3 = cv2.imread(image3, cv2.IMREAD_COLOR) #Blue, Green, Red
     cv2.imshow(f'{image3} - original', img) 
+
+    images = [img, img1, img2, img3]
    
     print(f'Pixel Count: {pixel_count(img)}')
 
-    blue_hist, green_hist, red_hist = histogram_BGR(img)
+    x = []
+    for i in range(256):
+        x.append(i)
 
-    x = range(256)
-    ry=(histogram_BGR(img[2]))
-    plt.plot(x,ry, label = "red", color='red')
+    gray_histos = []
 
-    gy=(histogram_BGR(img[1]))
-    plt.plot(x, gy, label = "green", color='green')
+    for i in range(4):
+        blue_hist  = histogram_BGR(images[i])[0]
+        green_hist  = histogram_BGR(images[i])[1]
+        red_hist = histogram_BGR(images[i])[2]
+        gray_hist = histogram_BGR(images[i])[3]
 
-    by=(histogram_BGR(img[0]))
-    plt.plot(x, by, label = "blue", color='blue')
-    
-    plt.title("Luminosity -Frequency Analysis", loc='center')
-    plt.legend()
-    plt.show()  # display
+        gray_histos.append(gray_hist)
+
+        plt.plot(x, red_hist, label = "red", color='red')
+        plt.plot(x, green_hist, label = "green", color='green')
+        plt.plot(x, blue_hist, label = "blue", color='blue')
+        plt.plot(x, gray_hist, label = "gray", color='gray')
+
+        plt.title(f'{i} - Color Histogram Line Chart', loc='center')
+        plt.legend()
+        plt.show()  # display
+
+    for i in range(len(gray_histos)):
+        plt.plot(x, gray_histos[i], color=(1/((i+1) * 3), 1/((i+1) * 3), 1/((i+1) * 3)))
+        plt.legend()
+    plt.title("Luminosity Histogram Line Chart", loc='center')
+    plt.show()
+
+    for image in images:
+        blue = unique_values(image)[0]
+        green = unique_values(image)[1]
+        red = unique_values(image)[2]
+        gray = unique_values(image)[3]
+
+        plt.bar(x, blue,  color="blue")
+        plt.bar(x, green, color="blue")
+        plt.bar(x, red, color="blue")
+        plt.bar(x, gray, color="blue")
+    plt.title("Unique Values Bar Chart", loc='center')
+    plt.show()
     
     cv2.waitKey() 
     cv2.destroyAllWindows() 
